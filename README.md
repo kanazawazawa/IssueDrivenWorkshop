@@ -68,8 +68,9 @@ IssueDrivenWorkshop/
 
 1. **Azure App Service を作成**
 2. **発行プロファイルを取得**: Azure Portal → App Service → 発行プロファイルのダウンロード
-3. **GitHub Secrets に登録**: リポジトリ → Settings → Secrets → `AZURE_WEBAPP_PUBLISH_PROFILE` に発行プロファイルの内容を貼り付け
-4. **ワークフローを編集**: `.github/workflows/deploy.yml` の `AZURE_WEBAPP_NAME` を実際のApp Service名に変更
+3. **GitHub Secrets に登録**: リポジトリ → Settings → Secrets and variables → Actions
+   - `AZURE_WEBAPP_NAME`: App Service の名前
+   - `AZURE_WEBAPP_PUBLISH_PROFILE`: 発行プロファイルの内容
 
 ## ライセンス
 
