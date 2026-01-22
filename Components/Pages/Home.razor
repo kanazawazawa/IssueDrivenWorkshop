@@ -100,10 +100,10 @@
                             <i class="bi bi-cash-stack me-2"></i>総経費金額
                         </h5>
                         <h1 class="display-4 text-primary mb-0">
-                            ¥@totalAmount.ToString("N0")
+                            @totalAmount.ToString("N0")円
                         </h1>
                         <p class="text-muted mt-2 mb-0">
-                            <small>承認済: ¥@approvedAmount.ToString("N0")</small>
+                            <small>承認済: @approvedAmount.ToString("N0")円</small>
                         </p>
                     </div>
                 </div>
@@ -189,7 +189,7 @@
                                                 <td>@request.EmployeeName</td>
                                                 <td>@request.Department</td>
                                                 <td>@request.Category</td>
-                                                <td class="text-end">¥@request.Amount.ToString("N0")</td>
+                                                <td class="text-end">@request.Amount.ToString("N0")円</td>
                                                 <td>
                                                     <span class="badge @GetStatusBadgeClass(request.Status)">
                                                         @request.Status
@@ -245,7 +245,7 @@
                 totalAmount = expenseRequests.Sum(e => e.Amount);
                 approvedAmount = expenseRequests.Where(e => e.Status == "承認済").Sum(e => e.Amount);
 
-                // Get 5 most recent expense requests
+                // Get 5 most recent expense requests (service already sorts by ExpenseDate descending)
                 recentExpenses = expenseRequests.Take(5).ToList();
             }
         }
