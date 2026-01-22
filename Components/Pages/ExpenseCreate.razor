@@ -1,0 +1,161 @@
+@page "/expense-requests/create"
+@rendermode InteractiveServer
+@using IssueDrivenWorkshop.Models
+@using IssueDrivenWorkshop.Services
+@inject ExpenseRequestService ExpenseService
+@inject NavigationManager NavigationManager
+
+<PageTitle>経費申請入力</PageTitle>
+
+<h1>経費申請入力</h1>
+
+<div class="row">
+    <div class="col-md-8">
+        <EditForm Model="@expenseRequest" OnValidSubmit="@HandleValidSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+
+            <div class="mb-3">
+                <label for="expenseDate" class="form-label">経費発生日 <span class="text-danger">*</span></label>
+                <InputDate id="expenseDate" class="form-control" @bind-Value="expenseRequest.ExpenseDate" />
+                <ValidationMessage For="@(() => expenseRequest.ExpenseDate)" />
+            </div>
+
+            <div class="mb-3">
+                <label for="employeeName" class="form-label">社員名 <span class="text-danger">*</span></label>
+                <InputText id="employeeName" class="form-control" @bind-Value="expenseRequest.EmployeeName" placeholder="山田 太郎" />
+                <ValidationMessage For="@(() => expenseRequest.EmployeeName)" />
+            </div>
+
+            <div class="mb-3">
+                <label for="department" class="form-label">部署 <span class="text-danger">*</span></label>
+                <InputText id="department" class="form-control" @bind-Value="expenseRequest.Department" placeholder="営業部" />
+                <ValidationMessage For="@(() => expenseRequest.Department)" />
+            </div>
+
+            <div class="mb-3">
+                <label for="category" class="form-label">カテゴリ <span class="text-danger">*</span></label>
+                <InputSelect id="category" class="form-select" @bind-Value="expenseRequest.Category">
+                    <option value="">選択してください</option>
+                    <option value="交通費">交通費</option>
+                    <option value="宿泊費">宿泊費</option>
+                    <option value="会議費">会議費</option>
+                    <option value="接待費">接待費</option>
+                    <option value="通信費">通信費</option>
+                    <option value="消耗品費">消耗品費</option>
+                    <option value="その他">その他</option>
+                </InputSelect>
+                <ValidationMessage For="@(() => expenseRequest.Category)" />
+            </div>
+
+            <div class="mb-3">
+                <label for="amount" class="form-label">金額 <span class="text-danger">*</span></label>
+                <div class="input-group">
+                    <InputNumber id="amount" class="form-control" @bind-Value="expenseRequest.Amount" placeholder="0" />
+                    <span class="input-group-text">円</span>
+                </div>
+                <ValidationMessage For="@(() => expenseRequest.Amount)" />
+            </div>
+
+            <div class="mb-3">
+                <label for="description" class="form-label">説明 <span class="text-danger">*</span></label>
+                <InputTextArea id="description" class="form-control" rows="4" @bind-Value="expenseRequest.Description" placeholder="経費の詳細を入力してください" />
+                <ValidationMessage For="@(() => expenseRequest.Description)" />
+            </div>
+
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                    @if (isSubmitting)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        <span>送信中...</span>
+                    }
+                    else
+                    {
+                        <span>申請する</span>
+                    }
+                </button>
+                <a href="/expense-requests" class="btn btn-secondary ms-2">キャンセル</a>
+            </div>
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @errorMessage
+                </div>
+            }
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private ExpenseRequest expenseRequest = new ExpenseRequest
+    {
+        ExpenseDate = DateTime.UtcNow,
+        Status = "申請中"
+    };
+    private bool isSubmitting = false;
+    private string errorMessage = string.Empty;
+
+    private async Task HandleValidSubmit()
+    {
+        isSubmitting = true;
+        errorMessage = string.Empty;
+
+        try
+        {
+            // 入力検証
+            if (string.IsNullOrWhiteSpace(expenseRequest.EmployeeName))
+            {
+                errorMessage = "社員名を入力してください。";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(expenseRequest.Department))
+            {
+                errorMessage = "部署を入力してください。";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(expenseRequest.Category))
+            {
+                errorMessage = "カテゴリを選択してください。";
+                return;
+            }
+
+            if (expenseRequest.Amount <= 0)
+            {
+                errorMessage = "金額は1円以上を入力してください。";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(expenseRequest.Description))
+            {
+                errorMessage = "説明を入力してください。";
+                return;
+            }
+
+            // DateTimeをUTCとして設定
+            expenseRequest.ExpenseDate = new DateTime(
+                expenseRequest.ExpenseDate.Year,
+                expenseRequest.ExpenseDate.Month,
+                expenseRequest.ExpenseDate.Day,
+                0, 0, 0,
+                DateTimeKind.Utc
+            );
+
+            await ExpenseService.CreateExpenseRequestAsync(expenseRequest);
+            
+            // 一覧画面へリダイレクト
+            NavigationManager.NavigateTo("/expense-requests");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"申請の作成に失敗しました: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}
