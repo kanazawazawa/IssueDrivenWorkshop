@@ -1,7 +1,7 @@
 ﻿name: Deploy to Azure App Service
 
 on:
-  push:
+  pull_request:
     branches:
       - main
   workflow_dispatch:
@@ -10,8 +10,8 @@ env:
   DOTNET_VERSION: '8.0.x'
 
 jobs:
-build-and-deploy:
-  runs-on: windows-latest
+  build-and-deploy:
+    runs-on: windows-latest
 
     steps:
       - name: Checkout code
