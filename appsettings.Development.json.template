@@ -1,0 +1,12 @@
+﻿{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AzureTableStorage": {
+    "ConnectionString": "<YOUR_AZURE_TABLE_STORAGE_CONNECTION_STRING>",
+    "TableName": "Expenses"
+  }
+}
