@@ -23,6 +23,7 @@ if (string.IsNullOrEmpty(connectionString))
 }
 
 builder.Services.AddSingleton(new ExpenseRequestService(connectionString, tableName));
+builder.Services.AddSingleton(new EmployeeService(connectionString, tableName));
 
 var app = builder.Build();
 
