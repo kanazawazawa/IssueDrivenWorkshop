@@ -1,0 +1,239 @@
+@page "/expense-requests/report/{rowKey}"
+@rendermode InteractiveServer
+@using IssueDrivenWorkshop.Models
+@using IssueDrivenWorkshop.Services
+@inject ExpenseRequestService ExpenseService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<PageTitle>経費申請書</PageTitle>
+
+<style>
+    @@media print {
+        .no-print {
+            display: none !important;
+        }
+        
+        .report-container {
+            max-width: 100%;
+        }
+    }
+    
+    .report-container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 40px;
+        background: white;
+        border: 1px solid #ddd;
+    }
+    
+    .report-header {
+        text-align: center;
+        border-bottom: 2px solid #333;
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .report-title {
+        font-size: 28px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    
+    .report-section {
+        margin-bottom: 25px;
+    }
+    
+    .report-label {
+        font-weight: bold;
+        display: inline-block;
+        width: 150px;
+        color: #555;
+    }
+    
+    .report-value {
+        display: inline-block;
+        border-bottom: 1px solid #999;
+        min-width: 300px;
+        padding: 5px 10px;
+    }
+    
+    .report-row {
+        margin-bottom: 15px;
+    }
+    
+    .report-description {
+        border: 1px solid #999;
+        padding: 15px;
+        min-height: 120px;
+        background: #fafafa;
+    }
+    
+    .report-footer {
+        margin-top: 50px;
+        text-align: right;
+    }
+    
+    .signature-line {
+        border-top: 1px solid #333;
+        width: 200px;
+        margin: 40px 0 10px 0;
+        display: inline-block;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: 4px;
+        font-weight: bold;
+        margin-left: 20px;
+    }
+    
+    .status-pending {
+        background-color: #007bff;
+        color: white;
+    }
+    
+    .status-approved {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .status-rejected {
+        background-color: #dc3545;
+        color: white;
+    }
+</style>
+
+<div class="no-print mb-3">
+    <a href="/expense-requests" class="btn btn-secondary">
+        <span class="bi bi-arrow-left"></span> 戻る
+    </a>
+    <button class="btn btn-primary ms-2" @onclick="PrintReport">
+        <span class="bi bi-printer"></span> 印刷
+    </button>
+</div>
+
+@if (isLoading)
+{
+    <div class="text-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">読み込み中...</span>
+        </div>
+        <p><em>読み込み中...</em></p>
+    </div>
+}
+else if (expenseRequest == null)
+{
+    <div class="alert alert-danger" role="alert">
+        申請が見つかりませんでした。
+    </div>
+}
+else
+{
+    <div class="report-container">
+        <div class="report-header">
+            <div class="report-title">経費申請書</div>
+            <div style="margin-top: 10px;">
+                <span>申請番号: @expenseRequest.RowKey</span>
+                <span class="status-badge @GetStatusClass(expenseRequest.Status)">
+                    @expenseRequest.Status
+                </span>
+            </div>
+        </div>
+
+        <div class="report-section">
+            <div class="report-row">
+                <span class="report-label">経費発生日：</span>
+                <span class="report-value">@expenseRequest.ExpenseDate.ToString("yyyy年MM月dd日")</span>
+            </div>
+            
+            <div class="report-row">
+                <span class="report-label">申請者名：</span>
+                <span class="report-value">@expenseRequest.EmployeeName</span>
+            </div>
+            
+            <div class="report-row">
+                <span class="report-label">所属部署：</span>
+                <span class="report-value">@expenseRequest.Department</span>
+            </div>
+            
+            <div class="report-row">
+                <span class="report-label">カテゴリ：</span>
+                <span class="report-value">@expenseRequest.Category</span>
+            </div>
+            
+            <div class="report-row">
+                <span class="report-label">金額：</span>
+                <span class="report-value">¥@expenseRequest.Amount.ToString("N0")</span>
+            </div>
+        </div>
+
+        <div class="report-section">
+            <div class="report-row">
+                <span class="report-label">経費の詳細説明：</span>
+            </div>
+            <div class="report-description">
+                @expenseRequest.Description
+            </div>
+        </div>
+
+        <div class="report-footer">
+            <div>承認者</div>
+            <div class="signature-line"></div>
+            <div style="margin-top: 5px; font-size: 14px; color: #666;">（署名）</div>
+        </div>
+
+        <div style="margin-top: 60px; text-align: center; font-size: 12px; color: #999;">
+            @if (expenseRequest.Timestamp.HasValue)
+            {
+                <span>申請日時: @expenseRequest.Timestamp.Value.LocalDateTime.ToString("yyyy年MM月dd日 HH:mm")</span>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string RowKey { get; set; } = string.Empty;
+
+    private ExpenseRequest? expenseRequest;
+    private bool isLoading = true;
+    private const string BusinessId = "expense-request";
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            expenseRequest = await ExpenseService.GetExpenseRequestAsync(BusinessId, RowKey);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading expense request: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private string GetStatusClass(string status)
+    {
+        return status switch
+        {
+            "申請中" => "status-pending",
+            "承認済" => "status-approved",
+            "却下" => "status-rejected",
+            _ => ""
+        };
+    }
+
+    private async Task PrintReport()
+    {
+        // JavaScript interop for printing
+        await JSRuntime.InvokeVoidAsync("window.print");
+    }
+
+
+}
