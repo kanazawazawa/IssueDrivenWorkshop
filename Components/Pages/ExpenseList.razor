@@ -33,6 +33,7 @@ else
                 <th>金額</th>
                 <th>説明</th>
                 <th>ステータス</th>
+                <th>操作</th>
             </tr>
         </thead>
         <tbody>
@@ -49,6 +50,11 @@ else
                         <span class="badge @GetStatusBadgeClass(request.Status)">
                             @request.Status
                         </span>
+                    </td>
+                    <td>
+                        <a href="/expense-requests/report/@request.RowKey" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <span class="bi bi-file-earmark-text"></span> 帳票
+                        </a>
                     </td>
                 </tr>
             }

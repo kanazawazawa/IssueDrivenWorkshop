@@ -1,0 +1,33 @@
+@inherits LayoutComponentBase
+
+<div class="report-page">
+    <article class="report-content">
+        @Body
+    </article>
+</div>
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
+
+<style>
+    .report-page {
+        width: 100%;
+        min-height: 100vh;
+        background: #f5f5f5;
+    }
+
+    .report-content {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    @@media print {
+        .report-page {
+            background: white;
+        }
+    }
+</style>
