@@ -55,11 +55,7 @@ public class EmployeeService
         }
 
         // DateTimeをUTCに変換
-        employee.HireDate = DateTime.SpecifyKind(employee.HireDate, DateTimeKind.Utc);
-        if (employee.DateOfBirth.HasValue)
-        {
-            employee.DateOfBirth = DateTime.SpecifyKind(employee.DateOfBirth.Value, DateTimeKind.Utc);
-        }
+        ConvertDateTimesToUtc(employee);
 
         await _tableClient.AddEntityAsync(employee);
         return employee;
@@ -68,14 +64,19 @@ public class EmployeeService
     public async Task<Employee> UpdateEmployeeAsync(Employee employee)
     {
         // DateTimeをUTCに変換
+        ConvertDateTimesToUtc(employee);
+
+        await _tableClient.UpdateEntityAsync(employee, employee.ETag);
+        return employee;
+    }
+
+    private void ConvertDateTimesToUtc(Employee employee)
+    {
         employee.HireDate = DateTime.SpecifyKind(employee.HireDate, DateTimeKind.Utc);
         if (employee.DateOfBirth.HasValue)
         {
             employee.DateOfBirth = DateTime.SpecifyKind(employee.DateOfBirth.Value, DateTimeKind.Utc);
         }
-
-        await _tableClient.UpdateEntityAsync(employee, employee.ETag);
-        return employee;
     }
 
     public async Task DeleteEmployeeAsync(string partitionKey, string rowKey)

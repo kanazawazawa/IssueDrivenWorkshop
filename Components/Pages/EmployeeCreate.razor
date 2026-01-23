@@ -118,45 +118,6 @@
 
         try
         {
-            // 入力検証
-            if (string.IsNullOrWhiteSpace(employee.EmployeeId))
-            {
-                errorMessage = "社員IDを入力してください。";
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(employee.FullName))
-            {
-                errorMessage = "氏名を入力してください。";
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(employee.Department))
-            {
-                errorMessage = "部署を選択してください。";
-                return;
-            }
-
-            // DateTimeをUTCとして設定
-            employee.HireDate = new DateTime(
-                employee.HireDate.Year,
-                employee.HireDate.Month,
-                employee.HireDate.Day,
-                0, 0, 0,
-                DateTimeKind.Utc
-            );
-
-            if (employee.DateOfBirth.HasValue)
-            {
-                employee.DateOfBirth = new DateTime(
-                    employee.DateOfBirth.Value.Year,
-                    employee.DateOfBirth.Value.Month,
-                    employee.DateOfBirth.Value.Day,
-                    0, 0, 0,
-                    DateTimeKind.Utc
-                );
-            }
-
             await EmployeeService.CreateEmployeeAsync(employee);
             
             // 一覧画面へリダイレクト
